@@ -47,11 +47,6 @@ public class ApplicationConfig {
 		}
 		return "#{" + beanNames[0] + "}";
 	}
-	
-	@Bean
-    public MessageChannel output() {
-        return new PublishSubscribeChannel();
-    }
 
 	/*
 	 * .boundaryEvent().timerWithDuration("PT5S").endEvent().

@@ -11,35 +11,33 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nexost.experiments.kafka.handler.MessageHandler;
+import com.nexost.experiments.kafka.message.Message;
 
-@Component
-@EnableBinding(Source.class)
+//@Component
 public class Communicator {
 	
 	@Autowired
-	private MessageChannel output;
+	private Sender sender;
 
 	public Communicator() {
 	}
 
 	public void run() {
 		System.out.println("COMMUNICATOR ON TARGET.");
-		System.out.println(output);
-		output = new PublishSubscribeChannel();
-		System.out.println(output);
-		send(new Message<String>("Test", "Hello world"));
-	}
-	
-	public void send(Message<?> m) {
-		try {
-			// avoid too much magic and transform ourselves
-			ObjectMapper mapper = new ObjectMapper();
-			String jsonMessage = mapper.writeValueAsString(m);
-			// wrap into a proper message for the transport (Kafka/Rabbit) and send it
-			output.send(MessageBuilder.withPayload(jsonMessage).setHeader("messageType", m.getMessageType()).build());
-		} catch (Exception e) {
-			throw new RuntimeException("Could not tranform and send message due to: " + e.getMessage(), e);
-		}
+		DefaultKafkaListener.register(new MessageHandler() {
+			@Override
+			public void handle(Message<String> message) {
+				System.out.println("Message received and handled by handler 1: " + message.toString());
+			}
+		});
+		DefaultKafkaListener.register(new MessageHandler() {
+			@Override
+			public void handle(Message<String> message) {
+				System.out.println("Message received and handled by handler 2: " + message.toString());
+			}
+		});
+		//sender.send(new Message<String>("Test", "Hello world"));
 	}
 
 }
